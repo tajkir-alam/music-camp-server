@@ -3,7 +3,7 @@ require('dotenv').config()
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
-const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
+// const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
 const port = process.env.PORT || 5000;
 
 // Middleware
@@ -51,11 +51,8 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
-        const userCollection = client.db("bistroBossDB").collection("user");
-        const menuCollection = client.db("bistroBossDB").collection("menu");
-        const reviewsCollection = client.db("bistroBossDB").collection("reviews");
-        const cartCollection = client.db("bistroBossDB").collection("cart");
-        const paymentCollection = client.db("bistroBossDB").collection("payments");
+        const classCollection = client.db("musicCampDB").collection("classes");
+        
 
         // JWT Token
         app.post('/jwt', (req, res) => {
@@ -191,18 +188,18 @@ async function run() {
 
 
         // Payment Section
-        app.post("/create-payment-intent", verifyJWT, async (req, res) => {
-            const { price } = req.body;
-            const amount = price * 100;
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: amount,
-                currency: "usd",
-                payment_method_types: ['card']
-            });
-            res.send({
-                clientSecret: paymentIntent.client_secret,
-            });
-        })
+        // app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+        //     const { price } = req.body;
+        //     const amount = price * 100;
+        //     const paymentIntent = await stripe.paymentIntents.create({
+        //         amount: amount,
+        //         currency: "usd",
+        //         payment_method_types: ['card']
+        //     });
+        //     res.send({
+        //         clientSecret: paymentIntent.client_secret,
+        //     });
+        // })
 
         app.post('/payment', verifyJWT, async (req, res) => {
             const payment = req.body;
