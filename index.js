@@ -1,7 +1,7 @@
 const express = require('express');
 require('dotenv').config()
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 const app = express();
 // const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
 const port = process.env.PORT || 5000;
@@ -15,23 +15,23 @@ const corsConfig = {
 app.use(cors(corsConfig));
 app.use(express.json());
 
-const verifyJWT = (req, res, next) => {
-    const authorization = req.headers.authorization;
-    if (!authorization) {
-        return res.status(401).send({ error: true, message: 'unauthorized access' });
-    }
+// const verifyJWT = (req, res, next) => {
+//     const authorization = req.headers.authorization;
+//     if (!authorization) {
+//         return res.status(401).send({ error: true, message: 'unauthorized access' });
+//     }
 
-    // bearer token
-    const token = authorization.split(' ')[1];
+//     // bearer token
+//     const token = authorization.split(' ')[1];
 
-    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
-        if (err) {
-            return res.status(401).send({ error: true, message: 'unauthorized access' });
-        }
-        req.decoded = decoded;
-        next();
-    })
-}
+//     jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+//         if (err) {
+//             return res.status(401).send({ error: true, message: 'unauthorized access' });
+//         }
+//         req.decoded = decoded;
+//         next();
+//     })
+// }
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -52,139 +52,142 @@ async function run() {
         await client.connect();
 
         const classCollection = client.db("musicCampDB").collection("classes");
-        
+
 
         // JWT Token
-        app.post('/jwt', (req, res) => {
-            const user = req.body;
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
-            res.send({ token });
-        })
+        // app.post('/jwt', (req, res) => {
+        //     const user = req.body;
+        //     const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
+        //     res.send({ token });
+        // })
 
         // JWT middleware
-        const verifyAdmin = async (req, res, next) => {
-            const email = req.decoded.email;
-            const query = { email: email };
-            const user = await userCollection.findOne(query);
-            if (user?.role !== 'admin') {
-                console.log(user?.role);
-                return res.status(403).status({ error: true, message: 'Forbidden unauthorize access' });
-            }
-            next();
-        }
+        // const verifyAdmin = async (req, res, next) => {
+        //     const email = req.decoded.email;
+        //     const query = { email: email };
+        //     const user = await userCollection.findOne(query);
+        //     if (user?.role !== 'admin') {
+        //         console.log(user?.role);
+        //         return res.status(403).status({ error: true, message: 'Forbidden unauthorize access' });
+        //     }
+        //     next();
+        // }
 
         // ------ User Section ------
-        app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
-            const result = await userCollection.find().toArray();
-            res.send(result)
-        })
+        // app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
+        //     const result = await userCollection.find().toArray();
+        //     res.send(result)
+        // })
 
-        app.post('/users', async (req, res) => {
-            const user = req.body;
-            const query = { email: user.email };
-            const existingUser = await userCollection.findOne(query);
-            if (existingUser) {
-                return res.send({ message: 'User already exist' });
-            }
-            const result = await userCollection.insertOne(user);
-            res.send(result)
-        })
+        // app.post('/users', async (req, res) => {
+        //     const user = req.body;
+        //     const query = { email: user.email };
+        //     const existingUser = await userCollection.findOne(query);
+        //     if (existingUser) {
+        //         return res.send({ message: 'User already exist' });
+        //     }
+        //     const result = await userCollection.insertOne(user);
+        //     res.send(result)
+        // })
 
-        app.delete('/users/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = await userCollection.deleteOne(query);
-            res.send(result);
-        })
+        // app.delete('/users/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: new ObjectId(id) };
+        //     const result = await userCollection.deleteOne(query);
+        //     res.send(result);
+        // })
 
-        app.get('/users/admin/:email', verifyJWT, async (req, res) => {
-            const email = req.params.email;
-            const userEmail = req.decoded.email;
-            if (userEmail !== email) {
-                return res.send({ admin: false })
-            };
-            const query = { email: email };
-            const user = await userCollection.findOne(query);
-            const result = { admin: user?.role === 'admin' };
-            res.send(result);
-        })
+        // app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+        //     const email = req.params.email;
+        //     const userEmail = req.decoded.email;
+        //     if (userEmail !== email) {
+        //         return res.send({ admin: false })
+        //     };
+        //     const query = { email: email };
+        //     const user = await userCollection.findOne(query);
+        //     const result = { admin: user?.role === 'admin' };
+        //     res.send(result);
+        // })
 
-        app.patch('/users/admin/:id', async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: new ObjectId(id) };
-            const updateUserRole = {
-                $set: {
-                    role: 'admin'
-                },
-            };
-            const result = await userCollection.updateOne(filter, updateUserRole);
-            res.send(result);
-        })
+        // app.patch('/users/admin/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const filter = { _id: new ObjectId(id) };
+        //     const updateUserRole = {
+        //         $set: {
+        //             role: 'admin'
+        //         },
+        //     };
+        //     const result = await userCollection.updateOne(filter, updateUserRole);
+        //     res.send(result);
+        // })
 
 
-        // ------ Menu Section ------
-        app.get('/menu', async (req, res) => {
-            const cursor = menuCollection.find();
+        // ------ Class Section ------
+        app.get('/class', async (req, res) => {
+            const limitIs = req.query.limit;
+            const sortClasses = req.query.sort;
+
+            const cursor = classCollection.find().limit(limitIs ? parseInt(limitIs) : 10000000).sort(sortClasses ? { students: parseInt(sortClasses) } : {});
             const result = await cursor.toArray();
             res.send(result)
         })
 
-        app.post('/menu', verifyJWT, verifyAdmin, async (req, res) => {
-            const newItem = req.body;
-            const result = await menuCollection.insertOne(newItem);
-            res.send(result);
-        })
+        // app.post('/class', verifyJWT, verifyAdmin, async (req, res) => {
+        //     const newItem = req.body;
+        //     const result = await menuCollection.insertOne(newItem);
+        //     res.send(result);
+        // })
 
-        app.delete('/menu/:id', verifyJWT, verifyAdmin, async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = await menuCollection.deleteOne(query);
-            res.send(result);
-        })
+        // app.delete('/class/:id', verifyJWT, verifyAdmin, async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: new ObjectId(id) };
+        //     const result = await menuCollection.deleteOne(query);
+        //     res.send(result);
+        // })
 
 
         // ------ Review Section ------
-        app.get('/reviews', async (req, res) => {
-            const cursor = reviewsCollection.find();
-            const result = await cursor.toArray();
-            res.send(result)
-        })
+        // app.get('/reviews', async (req, res) => {
+        //     const cursor = reviewsCollection.find();
+        //     const result = await cursor.toArray();
+        //     res.send(result)
+        // })
 
 
-        // ------ Cart Section ------
-        app.get('/cart', verifyJWT, async (req, res) => {
-            const email = req.query.email;
-            if (!email) {
-                res.send([])
-            }
-            // const decodedEmail = req.decoded.email;
-            // if(email !== decodedEmail){
-            //     return res.status(403).send({error: true, message:"Forbidden access"});
-            // }
+        // // ------ Cart Section ------
+        // app.get('/cart', verifyJWT, async (req, res) => {
+        //     const email = req.query.email;
+        //     if (!email) {
+        //         res.send([])
+        //     }
+        //     // const decodedEmail = req.decoded.email;
+        //     // if(email !== decodedEmail){
+        //     //     return res.status(403).send({error: true, message:"Forbidden access"});
+        //     // }
 
-            const decodedEmail = req.decoded.email;
-            if (email !== decodedEmail) {
-                return res.status(403).send({ error: true, message: 'porviden access' })
-            }
+        //     const decodedEmail = req.decoded.email;
+        //     if (email !== decodedEmail) {
+        //         return res.status(403).send({ error: true, message: 'forbidden access' })
+        //     }
 
-            const query = { email: email };
-            const cursor = cartCollection.find(query);
-            const result = await cursor.toArray();
-            res.send(result);
-        })
+        //     const query = { email: email };
+        //     const cursor = cartCollection.find(query);
+        //     const result = await cursor.toArray();
+        //     res.send(result);
+        // })
 
-        app.post('/cart', async (req, res) => {
-            const item = req.body
-            const result = await cartCollection.insertOne(item);
-            res.send(result)
-        })
+        // app.post('/cart', async (req, res) => {
+        //     const item = req.body
+        //     const result = await cartCollection.insertOne(item);
+        //     res.send(result)
+        // })
 
-        app.delete('/cart/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = await cartCollection.deleteOne(query);
-            res.send(result);
-        })
+        // app.delete('/cart/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: new ObjectId(id) };
+        //     const result = await cartCollection.deleteOne(query);
+        //     res.send(result);
+        // })
 
 
         // Payment Section
@@ -201,67 +204,67 @@ async function run() {
         //     });
         // })
 
-        app.post('/payment', verifyJWT, async (req, res) => {
-            const payment = req.body;
-            const insertResult = await paymentCollection.insertOne(payment);
+        // app.post('/payment', verifyJWT, async (req, res) => {
+        //     const payment = req.body;
+        //     const insertResult = await paymentCollection.insertOne(payment);
 
-            const query = { _id: { $in: payment.cartsItems.map(id => new ObjectId(id)) } };
-            const deleteResult = await cartCollection.deleteMany(query);
+        //     const query = { _id: { $in: payment.cartsItems.map(id => new ObjectId(id)) } };
+        //     const deleteResult = await cartCollection.deleteMany(query);
 
-            res.send({ insertResult, deleteResult });
-        })
+        //     res.send({ insertResult, deleteResult });
+        // })
 
-        // admin status
-        app.get('/admin-status', verifyJWT, verifyAdmin, async (req, res) => {
-            const payment = await paymentCollection.find().toArray();
-            const revenue = payment.reduce((sum, item) => sum + item.price, 0);
-            const customers = await userCollection.estimatedDocumentCount();
-            const products = await menuCollection.estimatedDocumentCount();
-            const orders = await paymentCollection.estimatedDocumentCount();
+        // // admin status
+        // app.get('/admin-status', verifyJWT, verifyAdmin, async (req, res) => {
+        //     const payment = await paymentCollection.find().toArray();
+        //     const revenue = payment.reduce((sum, item) => sum + item.price, 0);
+        //     const customers = await userCollection.estimatedDocumentCount();
+        //     const products = await menuCollection.estimatedDocumentCount();
+        //     const orders = await paymentCollection.estimatedDocumentCount();
 
-            res.send({
-                revenue,
-                customers,
-                products,
-                orders
-            })
+        //     res.send({
+        //         revenue,
+        //         customers,
+        //         products,
+        //         orders
+        //     })
 
-        })
+        // })
 
-        app.get('/order-stats', async (req, res) => {
-            const pipeline = [
-                {
-                    $lookup: {
-                        from: 'menu',
-                        localField: 'menuItems',
-                        foreignField: '_id',
-                        as: 'menuItemsData'
-                    }
-                },
-                {
-                    $unwind: '$menuItemsData'
-                },
-                {
-                    $group: {
-                        _id: '$menuItemsData.category',
-                        count: { $sum: 1 },
-                        total: { $sum: '$menuItemsData.price' }
-                    }
-                },
-                {
-                    $project: {
-                        category: '$_id',
-                        count: 1,
-                        total: { $round: ['$total', 2] },
-                        _id: 0
-                    }
-                }
-            ];
+        // app.get('/order-stats', async (req, res) => {
+        //     const pipeline = [
+        //         {
+        //             $lookup: {
+        //                 from: 'menu',
+        //                 localField: 'menuItems',
+        //                 foreignField: '_id',
+        //                 as: 'menuItemsData'
+        //             }
+        //         },
+        //         {
+        //             $unwind: '$menuItemsData'
+        //         },
+        //         {
+        //             $group: {
+        //                 _id: '$menuItemsData.category',
+        //                 count: { $sum: 1 },
+        //                 total: { $sum: '$menuItemsData.price' }
+        //             }
+        //         },
+        //         {
+        //             $project: {
+        //                 category: '$_id',
+        //                 count: 1,
+        //                 total: { $round: ['$total', 2] },
+        //                 _id: 0
+        //             }
+        //         }
+        //     ];
 
-            const result = await paymentCollection.aggregate(pipeline).toArray()
-            res.send(result)
+        //     const result = await paymentCollection.aggregate(pipeline).toArray()
+        //     res.send(result)
 
-        })
+        // })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
