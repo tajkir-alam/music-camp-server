@@ -51,7 +51,7 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
-        const classCollection = client.db("musicCampDB").collection("classes");
+        const courseCollection = client.db("musicCampDB").collection("courseInfo");
 
 
         // JWT Token
@@ -127,9 +127,18 @@ async function run() {
             const limitIs = req.query.limit;
             const sortClasses = req.query.sort;
 
-            const cursor = classCollection.find().limit(limitIs ? parseInt(limitIs) : 10000000).sort(sortClasses ? { students: parseInt(sortClasses) } : {});
+            const cursor = courseCollection.find().limit(limitIs ? parseInt(limitIs) : 10000000).sort(sortClasses ? { students: parseInt(sortClasses) } : {});
             const result = await cursor.toArray();
             res.send(result)
+        })
+
+        app.get('/instructors', async (req, res) => {
+            const limitIs = req.query.limit;
+            
+
+            const cursor = courseCollection.find().limit(limitIs? parseInt(limitIs) : 10000000)
+            const result = await cursor.toArray();
+            res.send(result);
         })
 
         // app.post('/class', verifyJWT, verifyAdmin, async (req, res) => {
