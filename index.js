@@ -132,27 +132,56 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/instructors', async (req, res) => {
+        app.get('/top-instructors', async (req, res) => {
             const limitIs = req.query.limit;
 
             const pipeline = [
                 {
                     $group: {
                         _id: "$instructorEmail",
+                        instructorName: { $first: "$instructorName" },
                         totalStudents: { $sum: "$students" },
+                        classes: { $push: { name: "$name", students: "$students", image: "$image" } }
                     }
                 },
-                
+                {
+                    $project: {
+                        _id: 1,
+                        instructorName: 1,
+                        totalStudents: 1,
+                        image: {
+                            $let: {
+                                vars: {
+                                    maxStudentsClass: {
+                                        $max: {
+                                            $map: {
+                                                input: "$classes",
+                                                as: "class",
+                                                in: {
+                                                    students: "$$class.students",
+                                                    image: "$$class.image"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                in: "$$maxStudentsClass.image"
+                            }
+                        }
+                    }
+                },
                 {
                     $sort: {
                         totalStudents: -1
                     }
+                },
+                {
+                    $limit: 6
                 }
             ];
 
-            const cursor = await courseCollection.aggregate(pipeline).toArray();
-            // const result = await cursor.toArray();
-            res.send(cursor);
+            const result = await courseCollection.aggregate(pipeline).toArray();
+            res.send(result);
         })
 
         // app.post('/class', verifyJWT, verifyAdmin, async (req, res) => {
