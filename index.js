@@ -134,11 +134,25 @@ async function run() {
 
         app.get('/instructors', async (req, res) => {
             const limitIs = req.query.limit;
-            
 
-            const cursor = courseCollection.find().limit(limitIs? parseInt(limitIs) : 10000000)
-            const result = await cursor.toArray();
-            res.send(result);
+            const pipeline = [
+                {
+                    $group: {
+                        _id: "$instructorEmail",
+                        totalStudents: { $sum: "$students" },
+                    }
+                },
+                
+                {
+                    $sort: {
+                        totalStudents: -1
+                    }
+                }
+            ];
+
+            const cursor = await courseCollection.aggregate(pipeline).toArray();
+            // const result = await cursor.toArray();
+            res.send(cursor);
         })
 
         // app.post('/class', verifyJWT, verifyAdmin, async (req, res) => {
