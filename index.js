@@ -15,23 +15,23 @@ const corsConfig = {
 app.use(cors(corsConfig));
 app.use(express.json());
 
-// const verifyJWT = (req, res, next) => {
-//     const authorization = req.headers.authorization;
-//     if (!authorization) {
-//         return res.status(401).send({ error: true, message: 'unauthorized access' });
-//     }
+const verifyJWT = (req, res, next) => {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+        return res.status(401).send({ error: true, message: 'unauthorized access' });
+    }
 
-//     // bearer token
-//     const token = authorization.split(' ')[1];
+    // bearer token
+    const token = authorization.split(' ')[1];
 
-//     jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
-//         if (err) {
-//             return res.status(401).send({ error: true, message: 'unauthorized access' });
-//         }
-//         req.decoded = decoded;
-//         next();
-//     })
-// }
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ error: true, message: 'unauthorized access' });
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -98,17 +98,17 @@ async function run() {
         //     res.send(result);
         // })
 
-        // app.get('/users/admin/:email', verifyJWT, async (req, res) => {
-        //     const email = req.params.email;
-        //     const userEmail = req.decoded.email;
-        //     if (userEmail !== email) {
-        //         return res.send({ admin: false })
-        //     };
-        //     const query = { email: email };
-        //     const user = await userCollection.findOne(query);
-        //     const result = { admin: user?.role === 'admin' };
-        //     res.send(result);
-        // })
+        app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const userEmail = req.decoded?.email;
+            if (userEmail !== email) {
+                return res.send({ admin: false })
+            };
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            const result = { admin: user?.role === 'Admin' };
+            res.send(result);
+        })
 
         // app.patch('/users/admin/:id', async (req, res) => {
         //     const id = req.params.id;
