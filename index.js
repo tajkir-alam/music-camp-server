@@ -52,6 +52,7 @@ async function run() {
         await client.connect();
 
         const courseCollection = client.db("musicCampDB").collection("courses");
+        const userCollection = client.db("musicCampDB").collection("users");
 
 
         // JWT Token
@@ -79,16 +80,16 @@ async function run() {
         //     res.send(result)
         // })
 
-        // app.post('/users', async (req, res) => {
-        //     const user = req.body;
-        //     const query = { email: user.email };
-        //     const existingUser = await userCollection.findOne(query);
-        //     if (existingUser) {
-        //         return res.send({ message: 'User already exist' });
-        //     }
-        //     const result = await userCollection.insertOne(user);
-        //     res.send(result)
-        // })
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const query = { email: user.email };
+            const existingUser = await userCollection.findOne(query);
+            if (existingUser) {
+                return res.send({ message: 'User already exist' });
+            }
+            const result = await userCollection.insertOne(user);
+            res.send(result)
+        })
 
         // app.delete('/users/:id', async (req, res) => {
         //     const id = req.params.id;
@@ -132,6 +133,14 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/classes', async (req, res) => {
+            const query = {status: "Approved"}
+            const cursor = courseCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        // ------ Instructor Section ------
         app.get('/top-instructors', async (req, res) => {
             const limitIs = req.query.limit;
 
