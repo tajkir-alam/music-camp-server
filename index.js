@@ -1,7 +1,7 @@
 const express = require('express');
 require('dotenv').config()
 const cors = require('cors');
-// const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const app = express();
 // const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
 const port = process.env.PORT || 5000;
@@ -51,15 +51,15 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
-        const courseCollection = client.db("musicCampDB").collection("courseInfo");
+        const courseCollection = client.db("musicCampDB").collection("courses");
 
 
         // JWT Token
-        // app.post('/jwt', (req, res) => {
-        //     const user = req.body;
-        //     const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
-        //     res.send({ token });
-        // })
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '2h' });
+            res.send({ token });
+        })
 
         // JWT middleware
         // const verifyAdmin = async (req, res, next) => {
@@ -181,6 +181,11 @@ async function run() {
             ];
 
             const result = await courseCollection.aggregate(pipeline).toArray();
+            res.send(result);
+        })
+
+        app.get('/instructors', async (req, res) => {
+            const result = await courseCollection.find().toArray();
             res.send(result);
         })
 
