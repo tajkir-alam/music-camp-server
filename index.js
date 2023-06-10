@@ -16,7 +16,23 @@ app.use(cors(corsConfig));
 app.use(express.json());
 
 
+const verifyJWT = (req, res, next) => {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+        return res.status(401).send({ error: true, message: 'unauthorized access' });
+    }
 
+    // bearer token
+    const token = authorization.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ error: true, message: 'unauthorized access' });
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -87,11 +103,11 @@ async function run() {
             const email = req.params.email;
             const userEmail = req.decoded?.email;
             if (userEmail !== email) {
-                return res.send({ admin: false })
+                return res.send({ role: false })
             };
             const query = { email: email };
             const user = await userCollection.findOne(query);
-            const result = { admin: user?.role === 'Admin' };
+            const result = { role: user?.role === 'Admin' };
             res.send(result);
         })
 
@@ -119,7 +135,7 @@ async function run() {
         })
 
         app.get('/classes', async (req, res) => {
-            const query = {status: "Approved"}
+            const query = { status: "Approved" }
             const cursor = courseCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
@@ -134,6 +150,7 @@ async function run() {
                     $group: {
                         _id: "$instructorEmail",
                         instructorName: { $first: "$instructorName" },
+                        instructorImg: { $first: "$instructorImg" },
                         totalStudents: { $sum: "$students" },
                         classes: { $push: { name: "$name", students: "$students", image: "$image" } }
                     }
@@ -142,6 +159,7 @@ async function run() {
                     $project: {
                         _id: 1,
                         instructorName: 1,
+                        instructorImg: 1,
                         totalStudents: 1,
                         image: {
                             $let: {
@@ -180,6 +198,30 @@ async function run() {
 
         app.get('/instructors', async (req, res) => {
             const result = await courseCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const userEmail = req.decoded?.email;
+            if (userEmail !== email) {
+                return res.send({ role: false })
+            };
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            const result = { role: user?.role === 'Instructor' };
+            res.send(result);
+        })
+
+        app.get('/users/student/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const userEmail = req.decoded?.email;
+            if (userEmail !== email) {
+                return res.send({ role: false })
+            };
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            const result = { role: user?.role === 'Student' };
             res.send(result);
         })
 
