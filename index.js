@@ -75,6 +75,17 @@ async function run() {
         //     }
         //     next();
         // }
+        
+        const verifyStudent = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            if (user?.role !== 'Student') {
+                console.log(user?.role);
+                return res.status(403).status({ error: true, message: 'Forbidden unauthorize access' });
+            }
+            next();
+        }
 
         // ------ User Section ------
         // app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
@@ -100,6 +111,7 @@ async function run() {
         //     res.send(result);
         // })
 
+        // Checking Admin or not
         app.get('/users/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const userEmail = req.decoded?.email;
@@ -128,7 +140,6 @@ async function run() {
         // ------ Instructor Section ------
         app.get('/top-instructors', async (req, res) => {
             const limitIs = req.query.limit;
-
             const pipeline = [
                 {
                     $group: {
@@ -175,7 +186,6 @@ async function run() {
                     $limit: 6
                 }
             ];
-
             const result = await courseCollection.aggregate(pipeline).toArray();
             res.send(result);
         })
@@ -185,6 +195,7 @@ async function run() {
             res.send(result);
         })
 
+        // Checking instructor or not
         app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const userEmail = req.decoded?.email;
@@ -197,6 +208,7 @@ async function run() {
             res.send(result);
         })
 
+        // Checking student or not
         app.get('/users/student/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const userEmail = req.decoded?.email;
@@ -284,12 +296,12 @@ async function run() {
             res.send(result)
         })
 
-        // app.delete('/cart/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: new ObjectId(id) };
-        //     const result = await cartCollection.deleteOne(query);
-        //     res.send(result);
-        // })
+        app.delete('/cart/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await cartCollection.deleteOne(query);
+            res.send(result);
+        })
 
 
         // Payment Section
