@@ -54,6 +54,7 @@ async function run() {
 
         const courseCollection = client.db("musicCampDB").collection("courses");
         const userCollection = client.db("musicCampDB").collection("users");
+        const cartCollection = client.db("musicCampDB").collection("carts");
 
 
         // JWT Token
@@ -123,23 +124,6 @@ async function run() {
         //     res.send(result);
         // })
 
-
-        // ------ Class Section ------
-        app.get('/class', async (req, res) => {
-            const limitIs = req.query.limit;
-            const sortClasses = req.query.sort;
-
-            const cursor = courseCollection.find().limit(limitIs ? parseInt(limitIs) : 10000000).sort(sortClasses ? { students: parseInt(sortClasses) } : {});
-            const result = await cursor.toArray();
-            res.send(result)
-        })
-
-        app.get('/classes', async (req, res) => {
-            const query = { status: "Approved" }
-            const cursor = courseCollection.find(query);
-            const result = await cursor.toArray();
-            res.send(result);
-        })
 
         // ------ Instructor Section ------
         app.get('/top-instructors', async (req, res) => {
@@ -225,6 +209,24 @@ async function run() {
             res.send(result);
         })
 
+        
+        // ------ Class Section ------
+        app.get('/class', async (req, res) => {
+            const limitIs = req.query.limit;
+            const sortClasses = req.query.sort;
+
+            const cursor = courseCollection.find().limit(limitIs ? parseInt(limitIs) : 10000000).sort(sortClasses ? { students: parseInt(sortClasses) } : {});
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
+        app.get('/classes', async (req, res) => {
+            const query = { status: "Approved" }
+            const cursor = courseCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
         // app.post('/class', verifyJWT, verifyAdmin, async (req, res) => {
         //     const newItem = req.body;
         //     const result = await menuCollection.insertOne(newItem);
@@ -269,11 +271,11 @@ async function run() {
         //     res.send(result);
         // })
 
-        // app.post('/cart', async (req, res) => {
-        //     const item = req.body
-        //     const result = await cartCollection.insertOne(item);
-        //     res.send(result)
-        // })
+        app.post('/cart', verifyJWT, async (req, res) => {
+            const item = req.body
+            const result = await cartCollection.insertOne(item);
+            res.send(result)
+        })
 
         // app.delete('/cart/:id', async (req, res) => {
         //     const id = req.params.id;
