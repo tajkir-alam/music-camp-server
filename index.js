@@ -209,8 +209,10 @@ async function run() {
             res.send(result);
         })
 
-        
+
         // ------ Class Section ------
+
+        // Classes for home limit with sort based students
         app.get('/class', async (req, res) => {
             const limitIs = req.query.limit;
             const sortClasses = req.query.sort;
@@ -220,8 +222,9 @@ async function run() {
             res.send(result)
         })
 
+        // All classes that are approved by admin
         app.get('/classes', async (req, res) => {
-            const query = { status: "Approved" }
+            const query = { status: "Approved" };
             const cursor = courseCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
@@ -250,6 +253,13 @@ async function run() {
 
 
         // // ------ Cart Section ------
+        app.get('/added-to-cart', verifyJWT, async (req, res) => {
+            const email = req.decoded.email;
+            const query = {userEmail: email};
+            const result = await cartCollection.find(query).toArray();
+            res.send(result);
+        })
+
         // app.get('/cart', verifyJWT, async (req, res) => {
         //     const email = req.query.email;
         //     if (!email) {
@@ -272,7 +282,9 @@ async function run() {
         // })
 
         app.post('/cart', verifyJWT, async (req, res) => {
-            const item = req.body
+            const item = req.body;
+            const userEmail = req.decoded.email;
+            console.log(userEmail);
             const result = await cartCollection.insertOne(item);
             res.send(result)
         })
