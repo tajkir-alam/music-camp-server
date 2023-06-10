@@ -260,31 +260,26 @@ async function run() {
             res.send(result);
         })
 
-        // app.get('/cart', verifyJWT, async (req, res) => {
-        //     const email = req.query.email;
-        //     if (!email) {
-        //         res.send([])
-        //     }
-        //     // const decodedEmail = req.decoded.email;
-        //     // if(email !== decodedEmail){
-        //     //     return res.status(403).send({error: true, message:"Forbidden access"});
-        //     // }
+        app.get('/cart', verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            if (!email) {
+                res.send([])
+            }
 
-        //     const decodedEmail = req.decoded.email;
-        //     if (email !== decodedEmail) {
-        //         return res.status(403).send({ error: true, message: 'forbidden access' })
-        //     }
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ error: true, message: 'forbidden access' })
+            }
 
-        //     const query = { email: email };
-        //     const cursor = cartCollection.find(query);
-        //     const result = await cursor.toArray();
-        //     res.send(result);
-        // })
+            const query = { userEmail: email };
+            const cursor = cartCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
 
         app.post('/cart', verifyJWT, async (req, res) => {
             const item = req.body;
             const userEmail = req.decoded.email;
-            console.log(userEmail);
             const result = await cartCollection.insertOne(item);
             res.send(result)
         })
