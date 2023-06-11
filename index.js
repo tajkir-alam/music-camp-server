@@ -255,11 +255,19 @@ app.patch('/classes/:id', async (req, res) => {
         $inc: {
             availableSeats: -1,
             students: 1,
-          },
+        },
     };
     const result = await courseCollection.updateOne(filter, updateSeats);
     res.send(result);
 })
+
+app.post('/course', async (req, res) => {
+    const item = req.body;
+    console.log(item);
+    const result = await courseCollection.insertOne(item);
+    res.send(result)
+})
+
 
 // app.delete('/class/:id', verifyJWT, verifyAdmin, async (req, res) => {
 //     const id = req.params.id;
