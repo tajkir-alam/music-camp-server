@@ -288,7 +288,6 @@ app.get('/cart', verifyJWT, async (req, res) => {
 
 app.post('/cart', verifyJWT, async (req, res) => {
     const item = req.body;
-    const userEmail = req.decoded.email;
     const result = await cartCollection.insertOne(item);
     res.send(result)
 })
@@ -316,7 +315,9 @@ app.post("/create-payment-intent", verifyJWT, async (req, res) => {
 })
 
 app.get('/payment', verifyJWT, async (req, res) => {
-    const result = await paymentCollection.find().toArray();
+    const email = req.decoded.email;
+    const query = {customerEmail: email};
+    const result = await paymentCollection.find(query).toArray();
     res.send(result);
 })
 
