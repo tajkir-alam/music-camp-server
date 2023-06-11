@@ -254,7 +254,8 @@ app.patch('/classes/:id', async (req, res) => {
     const updateSeats = {
         $inc: {
             availableSeats: -1,
-        },
+            students: 1,
+          },
     };
     const result = await courseCollection.updateOne(filter, updateSeats);
     res.send(result);
