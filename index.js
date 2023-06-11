@@ -3,7 +3,7 @@ require('dotenv').config()
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
-// const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
+const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
 const port = process.env.PORT || 5000;
 
 // Middleware
@@ -55,6 +55,7 @@ async function run() {
         const courseCollection = client.db("musicCampDB").collection("courses");
         const userCollection = client.db("musicCampDB").collection("users");
         const cartCollection = client.db("musicCampDB").collection("carts");
+        const paymentCollection = client.db("musicCampDB").collection("payments");
 
 
         // JWT Token
@@ -75,17 +76,6 @@ async function run() {
         //     }
         //     next();
         // }
-        
-        const verifyStudent = async (req, res, next) => {
-            const email = req.decoded.email;
-            const query = { email: email };
-            const user = await userCollection.findOne(query);
-            if (user?.role !== 'Student') {
-                console.log(user?.role);
-                return res.status(403).status({ error: true, message: 'Forbidden unauthorize access' });
-            }
-            next();
-        }
 
         // ------ User Section ------
         // app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
@@ -267,7 +257,7 @@ async function run() {
         // // ------ Cart Section ------
         app.get('/added-to-cart', verifyJWT, async (req, res) => {
             const email = req.decoded.email;
-            const query = {userEmail: email};
+            const query = { userEmail: email };
             const result = await cartCollection.find(query).toArray();
             res.send(result);
         })
@@ -305,30 +295,30 @@ async function run() {
 
 
         // Payment Section
-        // app.post("/create-payment-intent", verifyJWT, async (req, res) => {
-        //     const { price } = req.body;
-        //     const amount = price * 100;
-        //     const paymentIntent = await stripe.paymentIntents.create({
-        //         amount: amount,
-        //         currency: "usd",
-        //         payment_method_types: ['card']
-        //     });
-        //     res.send({
-        //         clientSecret: paymentIntent.client_secret,
-        //     });
-        // })
+        app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+            const { totalPrice } = req.body;
+            const amount = totalPrice * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ['card'],
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        })
 
-        // app.post('/payment', verifyJWT, async (req, res) => {
-        //     const payment = req.body;
-        //     const insertResult = await paymentCollection.insertOne(payment);
+        app.post('/payment', verifyJWT, async (req, res) => {
+            const payment = req.body;
+            const insertResult = await paymentCollection.insertOne(payment);
 
-        //     const query = { _id: { $in: payment.cartsItems.map(id => new ObjectId(id)) } };
-        //     const deleteResult = await cartCollection.deleteMany(query);
+            const query = { _id: { $in: payment.cartsItems.map(id => new ObjectId(id)) } };
+            const deleteResult = await cartCollection.deleteMany(query);
 
-        //     res.send({ insertResult, deleteResult });
-        // })
+            res.send({ insertResult, deleteResult });
+        })
 
-        // // admin status
+        // // Admin Status
         // app.get('/admin-status', verifyJWT, verifyAdmin, async (req, res) => {
         //     const payment = await paymentCollection.find().toArray();
         //     const revenue = payment.reduce((sum, item) => sum + item.price, 0);
