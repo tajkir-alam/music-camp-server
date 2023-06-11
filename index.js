@@ -316,8 +316,9 @@ app.post("/create-payment-intent", verifyJWT, async (req, res) => {
 
 app.get('/payment', verifyJWT, async (req, res) => {
     const email = req.decoded.email;
+    const sortByDate = parseInt(req.query?.sort);
     const query = {customerEmail: email};
-    const result = await paymentCollection.find(query).toArray();
+    const result = await paymentCollection.find(query).sort(sortByDate ? {date: -1} : {}).toArray();
     res.send(result);
 })
 
