@@ -192,6 +192,8 @@ app.get('/instructors', async (req, res) => {
     res.send(result);
 })
 
+
+
 // Checking instructor or not
 app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
     const email = req.params.email;
@@ -204,6 +206,7 @@ app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
     const result = { role: user?.role === 'Instructor' };
     res.send(result);
 })
+
 
 // Checking student or not
 app.get('/users/student/:email', verifyJWT, async (req, res) => {
@@ -244,6 +247,18 @@ app.get('/classes', async (req, res) => {
 //     const result = await menuCollection.insertOne(newItem);
 //     res.send(result);
 // })
+
+app.patch('/classes/:id', async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const updateSeats = {
+        $inc: {
+            availableSeats: -1,
+        },
+    };
+    const result = await courseCollection.updateOne(filter, updateSeats);
+    res.send(result);
+})
 
 // app.delete('/class/:id', verifyJWT, verifyAdmin, async (req, res) => {
 //     const id = req.params.id;
@@ -317,8 +332,8 @@ app.post("/create-payment-intent", verifyJWT, async (req, res) => {
 app.get('/payment', verifyJWT, async (req, res) => {
     const email = req.decoded.email;
     const sortByDate = parseInt(req.query?.sort);
-    const query = {customerEmail: email};
-    const result = await paymentCollection.find(query).sort(sortByDate ? {date: -1} : {}).toArray();
+    const query = { customerEmail: email };
+    const result = await paymentCollection.find(query).sort(sortByDate ? { date: -1 } : {}).toArray();
     res.send(result);
 })
 
