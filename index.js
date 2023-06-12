@@ -73,16 +73,15 @@ app.post('/jwt', (req, res) => {
 })
 
 // JWT middleware
-// const verifyAdmin = async (req, res, next) => {
-//     const email = req.decoded.email;
-//     const query = { email: email };
-//     const user = await userCollection.findOne(query);
-//     if (user?.role !== 'admin') {
-//         console.log(user?.role);
-//         return res.status(403).status({ error: true, message: 'Forbidden unauthorize access' });
-//     }
-//     next();
-// }
+const verifyAdmin = async (req, res, next) => {
+    const email = req.decoded.email;
+    const query = { email: email };
+    const user = await userCollection.findOne(query);
+    if (user?.role !== 'Admin') {
+        return res.status(403).status({ error: true, message: 'Forbidden unauthorize access' });
+    }
+    next();
+}
 
 // ----- Checking the role of an user -----
 // Checking Admin or not
@@ -129,10 +128,10 @@ app.get('/users/student/:email', verifyJWT, async (req, res) => {
 // ----- Admin Section -----
 
 // ------ User Section ------
-// app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
-//     const result = await userCollection.find().toArray();
-//     res.send(result)
-// })
+app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
+    const result = await userCollection.find().toArray();
+    res.send(result)
+})
 
 // User creating
 app.post('/users', async (req, res) => {
@@ -154,17 +153,29 @@ app.post('/users', async (req, res) => {
 // })
 
 
-// app.patch('/users/admin/:id', async (req, res) => {
-//     const id = req.params.id;
-//     const filter = { _id: new ObjectId(id) };
-//     const updateUserRole = {
-//         $set: {
-//             role: 'admin'
-//         },
-//     };
-//     const result = await userCollection.updateOne(filter, updateUserRole);
-//     res.send(result);
-// })
+app.patch('/users/admin/:id', async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const updateUserRole = {
+        $set: {
+            role: 'Admin'
+        },
+    };
+    const result = await userCollection.updateOne(filter, updateUserRole);
+    res.send(result);
+})
+
+app.patch('/users/instructor/:id', async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const updateUserRole = {
+        $set: {
+            role: 'Instructor'
+        },
+    };
+    const result = await userCollection.updateOne(filter, updateUserRole);
+    res.send(result);
+})
 
 
 app.patch('/approve-class/:id', verifyJWT, async (req, res) => {
@@ -184,10 +195,23 @@ app.patch('/deny-class/:id', verifyJWT, async (req, res) => {
     const filter = { _id: new ObjectId(id) };
     const updateUserRole = {
         $set: {
-            status: 'Deny'
+            status: 'Denied'
         },
     };
     const result = await courseCollection.updateOne(filter, updateUserRole);
+    res.send(result);
+})
+
+app.post('/feedback/:id', verifyJWT, async (req, res) => {
+    const id = req.params.id;
+    const {feedback} = req.body;
+    const filter = { _id: new ObjectId(id) };
+    const addFeedback = {
+        $set: {
+            feedBack: feedback
+        }
+    }
+    const result = await courseCollection.updateOne(filter, addFeedback);
     res.send(result);
 })
 
