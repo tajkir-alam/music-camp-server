@@ -192,6 +192,14 @@ app.get('/instructors', async (req, res) => {
     res.send(result);
 })
 
+// get instructors classes
+app.get('/instructor-classes', verifyJWT, async(req, res) => {
+    const email = req.decoded.email;
+    const query = {instructorEmail: email};
+    const result = await courseCollection.find(query).toArray();
+    res.send(result);
+})
+
 
 
 // Checking instructor or not
@@ -248,7 +256,7 @@ app.get('/classes', async (req, res) => {
 //     res.send(result);
 // })
 
-app.patch('/classes/:id', async (req, res) => {
+app.patch('/classes/:id', verifyJWT, async (req, res) => {
     const id = req.params.id;
     const filter = { _id: new ObjectId(id) };
     const updateSeats = {
@@ -261,7 +269,7 @@ app.patch('/classes/:id', async (req, res) => {
     res.send(result);
 })
 
-app.post('/course', async (req, res) => {
+app.post('/course', verifyJWT, async (req, res) => {
     const item = req.body;
     console.log(item);
     const result = await courseCollection.insertOne(item);
