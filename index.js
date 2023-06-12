@@ -125,6 +125,9 @@ app.get('/users/student/:email', verifyJWT, async (req, res) => {
 })
 
 
+
+// ----- Admin Section -----
+
 // ------ User Section ------
 // app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
 //     const result = await userCollection.find().toArray();
@@ -164,10 +167,29 @@ app.post('/users', async (req, res) => {
 // })
 
 
-// ------ Instructor Section ------
-app.get('/')
+app.patch('/approve-class/:id', verifyJWT, async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const updateUserRole = {
+        $set: {
+            status: 'Approved'
+        },
+    };
+    const result = await courseCollection.updateOne(filter, updateUserRole);
+    res.send(result);
+})
 
-
+app.patch('/deny-class/:id', verifyJWT, async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const updateUserRole = {
+        $set: {
+            status: 'Deny'
+        },
+    };
+    const result = await courseCollection.updateOne(filter, updateUserRole);
+    res.send(result);
+})
 
 // ------ Instructor Section ------
 app.get('/top-instructors', async (req, res) => {
