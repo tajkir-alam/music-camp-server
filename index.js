@@ -84,12 +84,54 @@ app.post('/jwt', (req, res) => {
 //     next();
 // }
 
+// ----- Checking the role of an user -----
+// Checking Admin or not
+app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+    const email = req.params.email;
+    const userEmail = req.decoded?.email;
+    if (userEmail !== email) {
+        return res.send({ role: false })
+    };
+    const query = { email: email };
+    const user = await userCollection.findOne(query);
+    const result = { role: user?.role === 'Admin' };
+    res.send(result);
+})
+
+// Checking instructor or not
+app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
+    const email = req.params.email;
+    const userEmail = req.decoded?.email;
+    if (userEmail !== email) {
+        return res.send({ role: false })
+    };
+    const query = { email: email };
+    const user = await userCollection.findOne(query);
+    const result = { role: user?.role === 'Instructor' };
+    res.send(result);
+})
+
+// Checking student or not
+app.get('/users/student/:email', verifyJWT, async (req, res) => {
+    const email = req.params.email;
+    const userEmail = req.decoded?.email;
+    if (userEmail !== email) {
+        return res.send({ role: false })
+    };
+    const query = { email: email };
+    const user = await userCollection.findOne(query);
+    const result = { role: user?.role === 'Student' };
+    res.send(result);
+})
+
+
 // ------ User Section ------
 // app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
 //     const result = await userCollection.find().toArray();
 //     res.send(result)
 // })
 
+// User creating
 app.post('/users', async (req, res) => {
     const user = req.body;
     const query = { email: user.email };
@@ -108,18 +150,6 @@ app.post('/users', async (req, res) => {
 //     res.send(result);
 // })
 
-// Checking Admin or not
-app.get('/users/admin/:email', verifyJWT, async (req, res) => {
-    const email = req.params.email;
-    const userEmail = req.decoded?.email;
-    if (userEmail !== email) {
-        return res.send({ role: false })
-    };
-    const query = { email: email };
-    const user = await userCollection.findOne(query);
-    const result = { role: user?.role === 'Admin' };
-    res.send(result);
-})
 
 // app.patch('/users/admin/:id', async (req, res) => {
 //     const id = req.params.id;
@@ -132,6 +162,11 @@ app.get('/users/admin/:email', verifyJWT, async (req, res) => {
 //     const result = await userCollection.updateOne(filter, updateUserRole);
 //     res.send(result);
 // })
+
+
+// ------ Instructor Section ------
+app.get('/')
+
 
 
 // ------ Instructor Section ------
@@ -187,48 +222,49 @@ app.get('/top-instructors', async (req, res) => {
     res.send(result);
 })
 
-app.get('/instructors', async (req, res) => {
+app.get('/all-classes', async (req, res) => {
     const result = await courseCollection.find().toArray();
     res.send(result);
 })
 
+
+// ----- Instructors Section -----
 // get instructors classes
-app.get('/instructor-classes', verifyJWT, async(req, res) => {
+app.get('/instructor-classes', verifyJWT, async (req, res) => {
     const email = req.decoded.email;
-    const query = {instructorEmail: email};
+    const query = { instructorEmail: email };
     const result = await courseCollection.find(query).toArray();
     res.send(result);
 })
 
-
-
-// Checking instructor or not
-app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
-    const email = req.params.email;
-    const userEmail = req.decoded?.email;
-    if (userEmail !== email) {
-        return res.send({ role: false })
-    };
-    const query = { email: email };
-    const user = await userCollection.findOne(query);
-    const result = { role: user?.role === 'Instructor' };
+app.get('/all-instructor', async (req, res) => {
+    const pipeline = [
+        // Group by instructorEmail and find the largest data for each email
+        {
+            $group: {
+                _id: "$instructorEmail",
+                largestData: { $max: "$students" },
+                data: { $first: "$$ROOT" }
+            }
+        },
+        // Sort the data based on instructorEmail or any other field
+        {
+            $sort: { students: -1 }
+        },
+        // Project the desired fields
+        {
+            $project: {
+                _id: 0,
+                instructorEmail: "$data.instructorEmail",
+                students: "$largestData",
+                instructorImg: "$data.instructorImg",
+                instructorName: "$data.instructorName",
+            }
+        }
+    ]
+    const result = await courseCollection.aggregate(pipeline).toArray();
     res.send(result);
 })
-
-
-// Checking student or not
-app.get('/users/student/:email', verifyJWT, async (req, res) => {
-    const email = req.params.email;
-    const userEmail = req.decoded?.email;
-    if (userEmail !== email) {
-        return res.send({ role: false })
-    };
-    const query = { email: email };
-    const user = await userCollection.findOne(query);
-    const result = { role: user?.role === 'Student' };
-    res.send(result);
-})
-
 
 // ------ Class Section ------
 
@@ -236,8 +272,7 @@ app.get('/users/student/:email', verifyJWT, async (req, res) => {
 app.get('/class', async (req, res) => {
     const limitIs = req.query.limit;
     const sortClasses = req.query.sort;
-
-    const cursor = courseCollection.find().limit(limitIs ? parseInt(limitIs) : 10000000).sort(sortClasses ? { students: parseInt(sortClasses) } : {});
+    const cursor = courseCollection.find().limit(limitIs ? parseInt(limitIs) : 100000000).sort(sortClasses ? { students: parseInt(sortClasses) } : {});
     const result = await cursor.toArray();
     res.send(result)
 })
@@ -249,12 +284,6 @@ app.get('/classes', async (req, res) => {
     const result = await cursor.toArray();
     res.send(result);
 })
-
-// app.post('/class', verifyJWT, verifyAdmin, async (req, res) => {
-//     const newItem = req.body;
-//     const result = await menuCollection.insertOne(newItem);
-//     res.send(result);
-// })
 
 app.patch('/classes/:id', verifyJWT, async (req, res) => {
     const id = req.params.id;
@@ -271,7 +300,6 @@ app.patch('/classes/:id', verifyJWT, async (req, res) => {
 
 app.post('/course', verifyJWT, async (req, res) => {
     const item = req.body;
-    console.log(item);
     const result = await courseCollection.insertOne(item);
     res.send(result)
 })
