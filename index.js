@@ -42,6 +42,7 @@ const client = new MongoClient(uri, {
     }
 });
 
+
 const dbConnect = async () => {
     try {
         client.connect();
@@ -144,14 +145,6 @@ app.post('/users', async (req, res) => {
     const result = await userCollection.insertOne(user);
     res.send(result)
 })
-
-// app.delete('/users/:id', async (req, res) => {
-//     const id = req.params.id;
-//     const query = { _id: new ObjectId(id) };
-//     const result = await userCollection.deleteOne(query);
-//     res.send(result);
-// })
-
 
 app.patch('/users/admin/:id', async (req, res) => {
     const id = req.params.id;
@@ -351,21 +344,6 @@ app.post('/course', verifyJWT, async (req, res) => {
 })
 
 
-// app.delete('/class/:id', verifyJWT, verifyAdmin, async (req, res) => {
-//     const id = req.params.id;
-//     const query = { _id: new ObjectId(id) };
-//     const result = await menuCollection.deleteOne(query);
-//     res.send(result);
-// })
-
-
-// ------ Review Section ------
-// app.get('/reviews', async (req, res) => {
-//     const cursor = reviewsCollection.find();
-//     const result = await cursor.toArray();
-//     res.send(result)
-// })
-
 
 // // ------ Cart Section ------
 app.get('/added-to-cart', verifyJWT, async (req, res) => {
@@ -437,63 +415,6 @@ app.post('/payment', verifyJWT, async (req, res) => {
 
     res.send({ insertResult, deleteResult });
 })
-
-// // Admin Status
-// app.get('/admin-status', verifyJWT, verifyAdmin, async (req, res) => {
-//     const payment = await paymentCollection.find().toArray();
-//     const revenue = payment.reduce((sum, item) => sum + item.price, 0);
-//     const customers = await userCollection.estimatedDocumentCount();
-//     const products = await menuCollection.estimatedDocumentCount();
-//     const orders = await paymentCollection.estimatedDocumentCount();
-
-//     res.send({
-//         revenue,
-//         customers,
-//         products,
-//         orders
-//     })
-
-// })
-
-// app.get('/order-stats', async (req, res) => {
-//     const pipeline = [
-//         {
-//             $lookup: {
-//                 from: 'menu',
-//                 localField: 'menuItems',
-//                 foreignField: '_id',
-//                 as: 'menuItemsData'
-//             }
-//         },
-//         {
-//             $unwind: '$menuItemsData'
-//         },
-//         {
-//             $group: {
-//                 _id: '$menuItemsData.category',
-//                 count: { $sum: 1 },
-//                 total: { $sum: '$menuItemsData.price' }
-//             }
-//         },
-//         {
-//             $project: {
-//                 category: '$_id',
-//                 count: 1,
-//                 total: { $round: ['$total', 2] },
-//                 _id: 0
-//             }
-//         }
-//     ];
-
-//     const result = await paymentCollection.aggregate(pipeline).toArray()
-//     res.send(result)
-
-// })
-
-
-
-
-
 
 
 app.listen(port, () => {
